@@ -22,15 +22,6 @@ function generateToken(user) {
   );
 }
 module.exports = {
-  Query: {
-    // async me(obj, args, context, info) {
-    //   console.log("hey");
-    //   // Check User
-    //   const user = checkAuth(context);
-    //   // Return User
-    //   return user;
-    // }
-  },
   Mutation: {
     async login(_, { phoneNumber }) {
       const { errors, valid } = validateLoginInput(phoneNumber);
@@ -82,6 +73,24 @@ module.exports = {
         id: res._id,
         token
       };
+    }
+  },
+  Query: {
+    async me(obj, args, context, info) {
+      // Check User
+      const user = checkAuth(context);
+      // Return User
+      return user;
+    },
+    async getContacts(obj, { contacts }, context, info) {
+      const user = checkAuth(context);
+      // Filter User base with contacts phoneNumber
+      try {
+        const users = await User.find({ phoneNumber: { $in: contacts } });
+        return users;
+      } catch (err) {
+        throw new Error(err);
+      }
     }
   }
 };

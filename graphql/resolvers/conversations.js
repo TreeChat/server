@@ -7,12 +7,6 @@ const checkAuth = require("../../utils/auth/checkAuth");
 module.exports = {
   // Queries
   Query: {
-    async me(obj, args, context, info) {
-      // Check User
-      const user = checkAuth(context);
-      // Return User
-      return user;
-    },
     async getUserConversations(obj, args, context, info) {
       // Check User
       const user = checkAuth(context);
