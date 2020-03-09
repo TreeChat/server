@@ -38,11 +38,7 @@ module.exports = {
     }
   },
   Mutation: {
-    async createConversation(
-      _,
-      { createConversationInput: { recipients } },
-      context
-    ) {
+    async createConversation(_, { recipients }, context) {
       // Check User
       const user = checkAuth(context);
 
@@ -84,23 +80,23 @@ module.exports = {
         participantsIds: arrayOfParticipantsIds
       });
 
-      if (existingConv && existingConv.length > 0) {
-        console.log("case existing conv");
-        throw new Error("A conversation already exists between these people.");
+      if (existingConv) {
+        throw new UserInputError(
+          "Conversation already exists with those users."
+        );
+      } else {
+        // save new conversation
+        const newConversation = new Conversation({
+          participants: arrayOfParticipants,
+          participantsIds: arrayOfParticipantsIds
+        });
+        let convSaved = await newConversation.save();
+
+        context.pubsub.publish("NEW_CONVERSATION", {
+          newConversation: convSaved
+        });
+        return convSaved;
       }
-
-      // save new conversation
-      const newConversation = new Conversation({
-        participants: arrayOfParticipants,
-        participantsIds: arrayOfParticipantsIds
-      });
-      let convSaved = await newConversation.save();
-
-      context.pubsub.publish("NEW_CONVERSATION", {
-        newConversation: convSaved
-      });
-
-      return convSaved;
     }
   },
   Subscription: {
