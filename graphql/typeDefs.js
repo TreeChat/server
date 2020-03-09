@@ -15,9 +15,9 @@ module.exports = gql`
     phoneNumber: String!
   }
   type Query {
+    me: User!
     getUserConversations: [Conversation]!
     getConversation(conversationId: ID!): Conversation!
-    getMe(userId: ID!): User
   }
 
   type Message {

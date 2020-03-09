@@ -23,19 +23,13 @@ function generateToken(user) {
 }
 module.exports = {
   Query: {
-    async getMe(obj, args, context, info) {
-      // Check User
-      const user = checkAuth(context);
-      // Fetch user conversations
-      try {
-        const getUser = await User.findById({
-          userId: user.id
-        });
-        return getUser;
-      } catch (err) {
-        throw new Error(err);
-      }
-    }
+    // async me(obj, args, context, info) {
+    //   console.log("hey");
+    //   // Check User
+    //   const user = checkAuth(context);
+    //   // Return User
+    //   return user;
+    // }
   },
   Mutation: {
     async login(_, { phoneNumber }) {
