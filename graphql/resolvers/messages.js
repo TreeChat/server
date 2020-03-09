@@ -9,9 +9,7 @@ module.exports = {
   Mutation: {
     async createMessage(
       _,
-      {
-        createMessageInput: { text, picture, video, conversation }
-      },
+      { createMessageInput: { text, picture, video, conversation } },
       context
     ) {
       // Check User
@@ -23,7 +21,6 @@ module.exports = {
 
       // Check if a conversation exist
       const conv = await Conversation.findById(conversation.toString());
-
       if (!conv) {
         throw new UserInputError("Conversation not found");
       }
@@ -51,7 +48,7 @@ module.exports = {
         newMessage: newMessage
       });
 
-      return newMessage;
+      return conv;
     },
     async deleteMessage(_, { conversationId, messageId }, context) {
       // Check User

@@ -56,7 +56,7 @@ module.exports = gql`
     createConversation(recipients: [String]!): Conversation!
 
     # create message
-    createMessage(createMessageInput: MessageInput): Message!
+    createMessage(createMessageInput: MessageInput): Conversation!
 
     # delete message
     deleteMessage(conversationId: String!, messageId: String!): Boolean!
