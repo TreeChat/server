@@ -5,6 +5,7 @@ const {
   validateRegisterInput
 } = require("../../utils/validation/validate-register");
 const { validateLoginInput } = require("../../utils/validation/validate-login");
+const checkAuth = require("../../utils/auth/checkAuth");
 
 const { SECRET_KEY } = require("../../config/keys");
 const { User } = require("../../models");
@@ -21,6 +22,21 @@ function generateToken(user) {
   );
 }
 module.exports = {
+  Query: {
+    async getMe(obj, args, context, info) {
+      // Check User
+      const user = checkAuth(context);
+      // Fetch user conversations
+      try {
+        const getUser = await User.findById({
+          userId: user.id
+        });
+        return getUser;
+      } catch (err) {
+        throw new Error(err);
+      }
+    }
+  },
   Mutation: {
     async login(_, { phoneNumber }) {
       const { errors, valid } = validateLoginInput(phoneNumber);
@@ -43,7 +59,7 @@ module.exports = {
         token
       };
     },
-    async register(_, { registerInput: { name, phoneNumber } }) {
+    async register(_, { name, phoneNumber }) {
       // 1. Validate user data
       const { valid, errors } = validateRegisterInput(name, phoneNumber);
       if (!valid) {

@@ -4,10 +4,11 @@ module.exports = gql`
   type User {
     id: ID!
     phoneNumber: String!
-    token: String!
+    token: String
     name: String!
-    avatar: String!
+    avatar: String
     createdAt: String!
+    conversations: [Conversation]
   }
   input RegisterInput {
     name: String!
@@ -16,7 +17,7 @@ module.exports = gql`
   type Query {
     getUserConversations: [Conversation]!
     getConversation(conversationId: ID!): Conversation!
-    getUser(userId: ID!): User
+    getMe(userId: ID!): User
   }
 
   type Message {
@@ -48,7 +49,7 @@ module.exports = gql`
   }
 
   type Mutation {
-    register(registerInput: RegisterInput): User!
+    register(phoneNumber: String!, name: String!): User!
     login(phoneNumber: String!): User!
 
     # create conversation
