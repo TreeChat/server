@@ -18,6 +18,7 @@ module.exports = gql`
     me: User!
     getUserConversations: [Conversation]
     getConversation(conversationId: ID!): Conversation!
+    getMessage(messageId: ID!): Message!
     getContacts(contacts: [String]!): [User]
   }
 
@@ -60,16 +61,11 @@ module.exports = gql`
 
     # delete message
     deleteMessage(conversationId: String!, messageId: String!): Boolean!
-
-    # create conversation
-    # createConversation(
-    #   participants: [String]!
-    #   messages: [String]
-    # ): Conversation!
   }
 
   type Subscription {
     newConversation: Conversation!
     newMessage: Message!
+    newUser: User!
   }
 `;

@@ -45,7 +45,7 @@ module.exports = {
         token
       };
     },
-    async register(_, { name, phoneNumber }) {
+    async register(_, { name, phoneNumber }, context) {
       // 1. Validate user data
       const { valid, errors } = validateRegisterInput(name, phoneNumber);
       if (!valid) {
@@ -69,6 +69,9 @@ module.exports = {
       });
       const res = await newUser.save();
       const token = generateToken(res);
+      context.pubsub.publish("NEW_USER", {
+        newUser: res
+      });
       return {
         ...res._doc,
         id: res._id,
@@ -93,6 +96,11 @@ module.exports = {
       } catch (err) {
         throw new Error(err);
       }
+    }
+  },
+  Subscription: {
+    newUser: {
+      subscribe: (_, __, { pubsub }) => pubsub.asyncIterator("NEW_USER")
     }
   }
 };
