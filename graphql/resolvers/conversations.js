@@ -79,8 +79,7 @@ module.exports = {
       const existingConv = await Conversation.find({
         participantsIds: arrayOfParticipantsIds
       });
-
-      if (existingConv) {
+      if (existingConv && existingConv.length > 0) {
         throw new UserInputError(
           "Conversation already exists with those users."
         );
@@ -91,7 +90,17 @@ module.exports = {
           participantsIds: arrayOfParticipantsIds
         });
         let convSaved = await newConversation.save();
+        // push conversation id in User data for each participants
+        convSaved.participantsIds.forEach(async p => {
+          const u = await User.findById(p);
+          if (u) {
+            await u.update({
+              $push: { conversations: convSaved._id }
+            });
+          }
+        });
 
+        // publish conv
         context.pubsub.publish("NEW_CONVERSATION", {
           newConversation: convSaved
         });

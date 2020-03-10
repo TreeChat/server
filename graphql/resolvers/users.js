@@ -9,6 +9,7 @@ const checkAuth = require("../../utils/auth/checkAuth");
 
 const { SECRET_KEY } = require("../../config/keys");
 const { User } = require("../../models");
+const { Conversation } = require("../../models");
 
 function generateToken(user) {
   return jwt.sign(
@@ -80,7 +81,8 @@ module.exports = {
       // Check User
       const user = checkAuth(context);
       // Return User
-      return user;
+      const u = await User.findById(user.id).populate("conversations");
+      return u;
     },
     async getContacts(obj, { contacts }, context, info) {
       const user = checkAuth(context);
