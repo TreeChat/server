@@ -12,8 +12,9 @@ module.exports = {
       const user = checkAuth(context);
       // Fetch user conversations
       try {
+        const userId = user.id;
         const conversations = await Conversation.find({
-          participantsIds: user.id
+          participantsIds: { $in: userId }
         }).sort({ createdAt: -1 });
         return conversations;
       } catch (err) {
