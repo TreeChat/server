@@ -1,4 +1,9 @@
-const { AuthenticationError, UserInputError } = require("apollo-server");
+const {
+  AuthenticationError,
+  UserInputError,
+  withFilter
+  // pubsub
+} = require("apollo-server");
 
 const Conversation = require("../../models/Conversation");
 const Message = require("../../models/Message");
@@ -71,6 +76,7 @@ module.exports = {
       context.pubsub.publish("NEW_MESSAGE", {
         newMessage: saveMessage
       });
+      console.log("context.pubsub", context.pubsub);
       return conv;
     },
     async deleteMessage(_, { conversationId, messageId }, context) {
@@ -105,8 +111,19 @@ module.exports = {
     }
   },
   Subscription: {
+    // newMessage: {
+    //   subscribe: (_, __, { pubsub }) => pubsub.asyncIterator("NEW_MESSAGE")
+    // }
     newMessage: {
-      subscribe: (_, __, { pubsub }) => pubsub.asyncIterator("NEW_MESSAGE")
+      subscribe: withFilter(
+        (_, __, { pubsub }) => pubsub.asyncIterator("NEW_MESSAGE"),
+        (payload, variables) => {
+          return (
+            payload.newMessage.conversation.toString() ===
+            variables.conversationId.toString()
+          );
+        }
+      )
     }
   }
 };

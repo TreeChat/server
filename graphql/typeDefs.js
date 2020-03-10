@@ -29,6 +29,7 @@ module.exports = gql`
     video: String
     sender: User!
     createdAt: String!
+    conversation: String
   }
 
   input MessageInput {
@@ -65,7 +66,7 @@ module.exports = gql`
 
   type Subscription {
     newConversation: Conversation!
-    newMessage: Message!
+    newMessage(conversationId: String!): Message!
     newUser: User!
   }
 `;
