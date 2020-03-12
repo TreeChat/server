@@ -54,6 +54,7 @@ module.exports = gql`
   type Mutation {
     register(phoneNumber: String!): User!
     login(phoneNumber: String!): User!
+    updateCurrentUser(name: String, avatar: String): User!
     # create conversation
     createConversation(recipients: [String]!): Conversation!
 

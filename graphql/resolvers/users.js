@@ -76,6 +76,20 @@ module.exports = {
         id: res._id,
         token
       };
+    },
+    async updateCurrentUser(obj, { name, avatar }, context, info) {
+      const user = checkAuth(context);
+      // Update User
+      try {
+        const u = await User.findOneAndUpdate(
+          { _id: user.id },
+          { $set: { name, avatar } },
+          { new: true }
+        );
+        return u;
+      } catch (error) {
+        throw new Error(err);
+      }
     }
   },
   Query: {
