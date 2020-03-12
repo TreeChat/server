@@ -22,7 +22,7 @@ module.exports = {
         }
         return message;
       } catch (error) {
-        throw new Error(err);
+        throw new Error(error);
       }
     }
   },
@@ -59,10 +59,6 @@ module.exports = {
       if (picture) newMessage.picture = picture;
       if (video) newMessage.video = video;
 
-      // Update conversation document with the message
-      await conv.update({
-        $push: { messages: newMessage }
-      });
       // Save Message
       const newMess = new Message({
         text: newMessage.text ? newMessage.text : "",
@@ -76,8 +72,12 @@ module.exports = {
       context.pubsub.publish("NEW_MESSAGE", {
         newMessage: saveMessage
       });
-      console.log("context.pubsub", context.pubsub);
-      return conv;
+      // Update conversation document with the message id
+      await conv.update({
+        $push: { messages: saveMessage.id }
+      });
+      // Return Message
+      return saveMessage;
     },
     async deleteMessage(_, { conversationId, messageId }, context) {
       // Check User

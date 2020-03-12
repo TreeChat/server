@@ -15,7 +15,9 @@ module.exports = {
         const userId = user.id;
         const conversations = await Conversation.find({
           participantsIds: { $in: userId }
-        }).sort({ createdAt: -1 });
+        })
+          .populate("messages")
+          .sort({ createdAt: -1 });
         return conversations;
       } catch (err) {
         throw new Error(err);
@@ -25,7 +27,9 @@ module.exports = {
       const user = checkAuth(context);
       // Fetch user conversations
       try {
-        const conversation = await Conversation.findById(conversationId);
+        const conversation = await Conversation.findById(
+          conversationId
+        ).populate("messages");
         if (!conversation) {
           throw new UserInputError("No Conversation found.");
         }
@@ -34,7 +38,7 @@ module.exports = {
         }
         return conversation;
       } catch (error) {
-        throw new Error(err);
+        throw new Error(error);
       }
     }
   },

@@ -17,15 +17,8 @@ const conversationSchema = new Schema({
   ],
   messages: [
     {
-      text: String,
-      picture: String,
-      video: String,
-      sender: {
-        name: String,
-        phoneNumber: String,
-        id: String
-      },
-      createdAt: String
+      type: Schema.Types.ObjectId,
+      ref: "Message"
     }
   ]
 });
