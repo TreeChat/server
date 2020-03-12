@@ -5,7 +5,7 @@ module.exports = gql`
     id: ID!
     phoneNumber: String!
     token: String
-    name: String!
+    name: String
     avatar: String
     createdAt: String!
     conversations: [Conversation]
@@ -52,7 +52,7 @@ module.exports = gql`
   }
 
   type Mutation {
-    register(phoneNumber: String!, name: String!): User!
+    register(phoneNumber: String!): User!
     login(phoneNumber: String!): User!
     # create conversation
     createConversation(recipients: [String]!): Conversation!

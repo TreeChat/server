@@ -15,8 +15,7 @@ function generateToken(user) {
   return jwt.sign(
     {
       id: user.id,
-      phoneNumber: user.phoneNumber,
-      name: user.name
+      phoneNumber: user.phoneNumber
     },
     SECRET_KEY,
     { expiresIn: "12h" }
@@ -45,27 +44,27 @@ module.exports = {
         token
       };
     },
-    async register(_, { name, phoneNumber }, context) {
-      // 1. Validate user data
-      const { valid, errors } = validateRegisterInput(name, phoneNumber);
-      if (!valid) {
-        throw new UserInputError("Errors", { errors });
-      }
+    async register(_, { phoneNumber }, context) {
+      // // 1. Validate user data
+      // const { valid, errors } = validateRegisterInput(name, phoneNumber);
+      // if (!valid) {
+      //   throw new UserInputError("Errors", { errors });
+      // }
 
-      // 2. Make sure user doesn't already exist
+      // 1. Check if user exists
       const user = await User.findOne({ phoneNumber });
       if (user) {
-        throw new UserInputError("Phone Number is taken", {
-          errors: {
-            phoneNumber: "Phone Number is taken"
-          }
-        });
+        // return user and token
+        const token = generateToken(user);
+        return {
+          ...user._doc,
+          id: user._id,
+          token
+        };
       }
-      // 3. Create User and create a token
+      // 2. if it does not exist, create User and create a token
       const newUser = new User({
-        name,
-        phoneNumber,
-        avatar: ""
+        phoneNumber
       });
       const res = await newUser.save();
       const token = generateToken(res);
