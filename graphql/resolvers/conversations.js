@@ -18,6 +18,12 @@ module.exports = {
         })
           .populate("messages")
           .sort({ createdAt: -1 });
+
+        // Remove current user from participants list
+        const parts = conversations[0].participants.filter(
+          p => p.id !== user.id
+        );
+        conversations[0].participants = parts;
         return conversations;
       } catch (err) {
         throw new Error(err);
