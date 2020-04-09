@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { UserInputError } = require("apollo-server");
+const PhoneNumber = require("awesome-phonenumber");
 
 const {
   validateRegisterInput
@@ -23,14 +24,21 @@ function generateToken(user) {
 }
 module.exports = {
   Mutation: {
-    async login(_, { phoneNumber }) {
+    async login(_, { phoneNumber, country = "" }) {
+      const pn = new PhoneNumber(phoneNumber, country.toUpperCase());
+      if (!pn.isValid()) {
+        throw new Error("Phone number is not valid");
+      }
+
+      let number = pn.getNumber("e164");
+
       const { errors, valid } = validateLoginInput(phoneNumber);
 
       if (!valid) {
         throw new UserInputError("Errors", { errors });
       }
 
-      const user = await User.findOne({ phoneNumber });
+      const user = await User.findOne({ phoneNumber: number });
 
       if (!user) {
         errors.general = "User not found";
@@ -44,15 +52,22 @@ module.exports = {
         token
       };
     },
-    async register(_, { phoneNumber }, context) {
+    async register(_, { phoneNumber, country = "" }, context) {
       // // 1. Validate user data
       // const { valid, errors } = validateRegisterInput(name, phoneNumber);
       // if (!valid) {
       //   throw new UserInputError("Errors", { errors });
       // }
 
+      // 0. Check if phone number has good behavior with intl indic
+      const pn = new PhoneNumber(phoneNumber, country.toUpperCase());
+      if (!pn.isValid()) {
+        throw new Error("Phone number is not valid");
+      }
+
+      let number = pn.getNumber("e164");
       // 1. Check if user exists
-      const user = await User.findOne({ phoneNumber });
+      const user = await User.findOne({ phoneNumber: number });
       if (user) {
         // return user and token
         const token = generateToken(user);
@@ -64,7 +79,7 @@ module.exports = {
       }
       // 2. if it does not exist, create User and create a token
       const newUser = new User({
-        phoneNumber
+        phoneNumber: number
       });
       const res = await newUser.save();
       const token = generateToken(res);
@@ -103,8 +118,15 @@ module.exports = {
     async getContacts(obj, { contacts }, context, info) {
       const user = checkAuth(context);
       // Filter User base with contacts phoneNumber
+      let newArray = [];
+      contacts.forEach(contact => {
+        const pn = new PhoneNumber(contact);
+        if (pn.isValid()) {
+          newArray.push(pn.getNumber("e164"));
+        }
+      });
       try {
-        const users = await User.find({ phoneNumber: { $in: contacts } });
+        const users = await User.find({ phoneNumber: { $in: newArray } });
         return users;
       } catch (err) {
         throw new Error(err);
