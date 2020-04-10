@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { UserInputError } = require("apollo-server");
 const PhoneNumber = require("awesome-phonenumber");
-
+const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN } = require("../../config/keys");
 const {
   validateRegisterInput
 } = require("../../utils/validation/validate-register");
@@ -11,6 +11,11 @@ const checkAuth = require("../../utils/auth/checkAuth");
 const { SECRET_KEY } = require("../../config/keys");
 const { User } = require("../../models");
 const { Conversation } = require("../../models");
+
+// TWILIO CONFIG
+const accountSid = TWILIO_ACCOUNT_SID;
+const authToken = TWILIO_AUTH_TOKEN;
+const client = require("twilio")(accountSid, authToken);
 
 function generateToken(user) {
   return jwt.sign(
@@ -52,45 +57,64 @@ module.exports = {
         token
       };
     },
-    async register(_, { phoneNumber, country = "" }, context) {
-      // // 1. Validate user data
-      // const { valid, errors } = validateRegisterInput(name, phoneNumber);
-      // if (!valid) {
-      //   throw new UserInputError("Errors", { errors });
-      // }
-
+    async register(obj, { phoneNumber, country = "" }, context, info) {
       // 0. Check if phone number has good behavior with intl indic
       const pn = new PhoneNumber(phoneNumber, country.toUpperCase());
       if (!pn.isValid()) {
         throw new Error("Phone number is not valid");
       }
 
-      let number = pn.getNumber("e164");
-      // 1. Check if user exists
+      const number = pn.getNumber("e164");
+      const code = Math.floor(100000 + Math.random() * 900000);
+
+      // 1. Check if user exists and send message
       const user = await User.findOne({ phoneNumber: number });
       if (user) {
-        // return user and token
-        const token = generateToken(user);
-        return {
-          ...user._doc,
-          id: user._id,
-          token
-        };
+        let userUpdated = await User.findOneAndUpdate(
+          { _id: user.id },
+          {
+            $set: {
+              verify_code: code,
+              verify_code_date: new Date()
+            }
+          },
+          { new: true }
+        );
+
+        // Send code and return boolean
+        try {
+          const res = await client.messages.create({
+            body: `This is your verify code to access TreeChat App : ${code}`,
+            from: "+14123019416",
+            to: number
+          });
+          if (res) {
+            return userUpdated;
+          }
+        } catch (error) {
+          throw new Error(error);
+        }
       }
-      // 2. if it does not exist, create User and create a token
+      // 2. if it does not exist, create User and send message
       const newUser = new User({
-        phoneNumber: number
+        phoneNumber: number,
+        verify_code: code,
+        verify_code_date: new Date()
       });
-      const res = await newUser.save();
-      const token = generateToken(res);
-      context.pubsub.publish("NEW_USER", {
-        newUser: res
-      });
-      return {
-        ...res._doc,
-        id: res._id,
-        token
-      };
+      await newUser.save();
+      // Send code and return boolean
+      try {
+        const res = await client.messages.create({
+          body: `This is your verify code to access TreeChat App : ${code}`,
+          from: "+14123019416",
+          to: number
+        });
+        if (res) {
+          return newUser;
+        }
+      } catch (error) {
+        throw new Error(error);
+      }
     },
     async updateCurrentUser(obj, { name, avatar }, context, info) {
       const user = checkAuth(context);
@@ -104,6 +128,53 @@ module.exports = {
         return u;
       } catch (error) {
         throw new Error(err);
+      }
+    },
+    async verifyUserPhoneNumber(
+      _,
+      { phoneNumber = "", country = "", verify_code = "" },
+      context
+    ) {
+      if (phoneNumber.length < 1 || verify_code.length < 1) {
+        throw new Error("Phone number and code are required.");
+      }
+
+      const pn = new PhoneNumber(phoneNumber, country.toUpperCase());
+      if (!pn.isValid()) {
+        throw new Error("Phone number is not valid");
+      }
+
+      let number = pn.getNumber("e164");
+
+      try {
+        var d = new Date();
+        d.setHours(d.getHours() - 1);
+        let user = await User.findOne({
+          $and: [
+            { phoneNumber: number },
+            { verify_code: verify_code },
+            {
+              verify_code_date: { $gt: d }
+            }
+          ]
+        });
+        if (user) {
+          const token = generateToken(user);
+          context.pubsub.publish("NEW_USER", {
+            newUser: user
+          });
+          return {
+            ...user._doc,
+            id: user._id,
+            token
+          };
+        } else {
+          throw new Error(
+            "No User found - Wrong / out of date code provided. "
+          );
+        }
+      } catch (err) {
+        throw new Error("No User found - Wrong / out of date code provided. ");
       }
     }
   },

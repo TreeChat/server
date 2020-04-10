@@ -5,6 +5,8 @@ const userSchema = new Schema({
   name: String,
   avatar: String,
   phoneNumber: String,
+  verify_code: Number,
+  verify_code_date: Date,
   contacts: [
     {
       type: Schema.Types.ObjectId,
