@@ -1,7 +1,11 @@
 const jwt = require("jsonwebtoken");
 const { UserInputError } = require("apollo-server");
 const PhoneNumber = require("awesome-phonenumber");
-const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN } = require("../../config/keys");
+const {
+  TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN,
+  TWILIO_PHONE_NUMBER
+} = require("../../config/keys");
 const {
   validateRegisterInput
 } = require("../../utils/validation/validate-register");
@@ -85,7 +89,7 @@ module.exports = {
         try {
           const res = await client.messages.create({
             body: `This is your verify code to access TreeChat App : ${code}`,
-            from: "+14123019416",
+            from: TWILIO_PHONE_NUMBER,
             to: number
           });
           if (res) {
@@ -106,7 +110,7 @@ module.exports = {
       try {
         const res = await client.messages.create({
           body: `This is your verify code to access TreeChat App : ${code}`,
-          from: "+14123019416",
+          from: TWILIO_PHONE_NUMBER,
           to: number
         });
         if (res) {
