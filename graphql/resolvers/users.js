@@ -152,36 +152,6 @@ module.exports = {
 
       let number = pn.getNumber("e164");
 
-      // 1. CASE PAUL'S NUMBER
-      // TODO: FIND OUT WHY PAUL4S NUMBER DOES NOT WORK
-      if (phoneNumber === "+33637120970") {
-        try {
-          let user = await User.findOne({ phoneNumber: number });
-          if (user) {
-            const token = generateToken(user);
-            context.pubsub.publish("NEW_USER", {
-              newUser: user
-            });
-            return {
-              ...user._doc,
-              id: user._id,
-              token
-            };
-          } else {
-            throw new Error(
-              "No User found - Wrong / out of date code provided. "
-            );
-          }
-        } catch (error) {
-          throw new Error(
-            "No User found - Wrong / out of date code provided. "
-          );
-        }
-        let user = await User.findOne({ phoneNumber: number });
-      }
-
-      // 2. OTHER CASES
-
       try {
         var d = new Date();
         d.setHours(d.getHours() - 1);
