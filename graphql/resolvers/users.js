@@ -28,7 +28,7 @@ function generateToken(user) {
       phoneNumber: user.phoneNumber
     },
     SECRET_KEY,
-    { expiresIn: "12h" }
+    { expiresIn: "365d" }
   );
 }
 module.exports = {
