@@ -10,7 +10,7 @@ const messageSchema = new Schema({
   video: String,
   sender: {
     type: Schema.Types.ObjectId,
-    ref: "users"
+    ref: "User"
   },
   conversation: {
     type: Schema.Types.ObjectId,
@@ -19,7 +19,7 @@ const messageSchema = new Schema({
   recipients: [
     {
       type: Schema.Types.ObjectId,
-      ref: "users"
+      ref: "User"
     }
   ]
 });
@@ -44,6 +44,7 @@ messageSchema.post("init", function(doc) {
     doc.text = decr;
   }
 });
+
 // Will add createdAt and updatedAt date automatically
 
 function encrypt(text) {

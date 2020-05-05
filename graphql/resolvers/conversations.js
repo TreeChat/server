@@ -16,9 +16,21 @@ module.exports = {
         const conversations = await Conversation.find({
           participantsIds: { $in: userId }
         })
-          .populate("messages")
+          .populate({
+            path: "messages",
+            populate: {
+              path: "sender"
+            }
+          })
           .sort({ createdAt: -1 });
-
+        console.log(
+          "conversations[0].messages[0].id :>> ",
+          conversations[0].messages[0].id
+        );
+        console.log(
+          "conversations[0].messages.sender :>> ",
+          conversations[0].messages.sender
+        );
         // Remove current user from participants list
         const parts = conversations[0].participants.filter(
           p => p.id !== user.id
