@@ -62,6 +62,11 @@ module.exports = {
       };
     },
     async register(obj, { phoneNumber, country = "" }, context, info) {
+      // Only for test user
+      if (phoneNumber === "+33000000000") {
+        let user = await User.findOne({ phoneNumber });
+        return user;
+      }
       // 0. Check if phone number has good behavior with intl indic
       const pn = new PhoneNumber(phoneNumber, country.toUpperCase());
       if (!pn.isValid()) {
@@ -84,7 +89,7 @@ module.exports = {
           },
           { new: true }
         );
-        console.log("user known :>> ", user);
+
         // Send code and return boolean
         try {
           const res = await client.messages.create({
@@ -141,6 +146,25 @@ module.exports = {
       { phoneNumber = "", country = "", verify_code = "" },
       context
     ) {
+      // Exception = Only for test user
+      if (phoneNumber === "+33000000000") {
+        try {
+          let user = await User.findOne({ phoneNumber });
+          let token = generateToken(user);
+          return {
+            ...user._doc,
+            id: user._id,
+            token
+          };
+        } catch (error) {
+          throw new Error(
+            "No User found - Wrong / out of date code provided. "
+          );
+        }
+      }
+
+      // Normal behavior thereafter
+
       if (phoneNumber.length < 1 || verify_code.length < 1) {
         throw new Error("Phone number and code are required.");
       }
