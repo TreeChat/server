@@ -47,7 +47,12 @@ module.exports = {
       try {
         const conversation = await Conversation.findById(
           conversationId
-        ).populate("messages");
+        ).populate({
+          path: "messages",
+          populate: {
+            path: "sender"
+          }
+        });
         if (!conversation) {
           throw new UserInputError("No Conversation found.");
         }
