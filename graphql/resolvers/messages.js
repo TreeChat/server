@@ -69,18 +69,19 @@ module.exports = {
         // recipients: conversation.participantsIds
       });
       const saveMessage = await newMess.save();
+      let messageToReturn = await Message.findById(saveMessage.id).populate(
+        "sender"
+      );
       context.pubsub.publish("NEW_MESSAGE", {
-        newMessage: saveMessage
+        newMessage: messageToReturn
       });
       // Update conversation document with the message id
       await conv.update({
-        $push: { messages: saveMessage.id }
+        $push: { messages: messageToReturn.id }
       });
       // Return Message
-      let returnedMessage = await Message.findById(saveMessage.id).populate(
-        "sender"
-      );
-      return returnedMessage;
+
+      return messageToReturn;
     },
     async deleteMessage(_, { conversationId, messageId }, context) {
       // Check User
