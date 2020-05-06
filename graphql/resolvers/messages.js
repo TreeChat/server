@@ -16,7 +16,7 @@ module.exports = {
       const user = checkAuth(context);
       // Fetch user conversations
       try {
-        const message = await Message.findById(messageId);
+        const message = await Message.findById(messageId).populate("sender");
         if (!message) {
           throw new UserInputError("No Message found.");
         }
@@ -77,7 +77,10 @@ module.exports = {
         $push: { messages: saveMessage.id }
       });
       // Return Message
-      return saveMessage;
+      let returnedMessage = await Message.findById(saveMessage.id).populate(
+        "sender"
+      );
+      return returnedMessage;
     },
     async deleteMessage(_, { conversationId, messageId }, context) {
       // Check User
