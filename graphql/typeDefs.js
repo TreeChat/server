@@ -32,7 +32,9 @@ module.exports = gql`
     video: String
     sender: User!
     createdAt: String!
-    conversation: String
+    conversation: Conversation!
+    readByCurrentUser: Boolean
+    waitingToReadRecipients: User
   }
 
   input MessageInput {

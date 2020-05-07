@@ -111,7 +111,6 @@ module.exports = {
         verify_code_date: new Date()
       });
       await newUser.save();
-      console.log("user created :>> ", newUser);
 
       // Send code and return boolean
       try {

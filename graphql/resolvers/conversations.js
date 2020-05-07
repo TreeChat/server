@@ -23,19 +23,19 @@ module.exports = {
             }
           })
           .sort({ createdAt: -1 });
-        console.log(
-          "conversations[0].messages[0].id :>> ",
-          conversations[0].messages[0].id
-        );
-        console.log(
-          "conversations[0].messages.sender :>> ",
-          conversations[0].messages.sender
-        );
         // Remove current user from participants list
         const parts = conversations[0].participants.filter(
           p => p.id !== user.id
         );
         conversations[0].participants = parts;
+        // Add readByCurrentUser for each message for each conv
+        conversations.forEach(async conversation => {
+          await conversation.messages.forEach(message => {
+            message.readByCurrentUser = !message.waitingToReadRecipients.includes(
+              user.id.toString()
+            );
+          });
+        });
         return conversations;
       } catch (err) {
         throw new Error(err);
@@ -59,6 +59,12 @@ module.exports = {
         if (!conversation.participantsIds.includes(user.id)) {
           throw new AuthenticationError("Action not allowed");
         }
+        // Add readByCurrentUser for each message
+        conversation.messages.forEach(message => {
+          message.readByCurrentUser = !message.waitingToReadRecipients.includes(
+            user.id.toString()
+          );
+        });
         return conversation;
       } catch (error) {
         throw new Error(error);

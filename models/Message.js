@@ -3,11 +3,16 @@ const timestamp = require("mongoose-timestamp");
 const crypto = require("crypto");
 const { ENCRYPTION_KEY } = require("../config/keys");
 const IV_LENGTH = 16; // For AES, this is always 16
+const checkAuth = require("../utils/auth/checkAuth");
 
 const messageSchema = new Schema({
   text: String,
   picture: String,
   video: String,
+  readByCurrentUser: {
+    type: Boolean,
+    default: false
+  },
   sender: {
     type: Schema.Types.ObjectId,
     ref: "User"
@@ -17,6 +22,12 @@ const messageSchema = new Schema({
     ref: "conversations"
   },
   recipients: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    }
+  ],
+  waitingToReadRecipients: [
     {
       type: Schema.Types.ObjectId,
       ref: "User"

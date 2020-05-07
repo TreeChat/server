@@ -20,6 +20,9 @@ module.exports = {
         if (!message) {
           throw new UserInputError("No Message found.");
         }
+        message.readByCurrentUser = !message.waitingToReadRecipients.includes(
+          user.id.toString()
+        );
         return message;
       } catch (error) {
         throw new Error(error);
@@ -58,20 +61,27 @@ module.exports = {
       if (text) newMessage.text = text;
       if (picture) newMessage.picture = picture;
       if (video) newMessage.video = video;
-
       // Save Message
       const newMess = new Message({
         text: newMessage.text ? newMessage.text : "",
         picture: newMessage.picture ? newMessage.picture : "",
         video: newMessage.video ? newMessage.video : "",
         sender: user.id,
-        conversation: conv.id
+        conversation: conv.id,
+        waitingToReadRecipients: conv.participantsIds.filter(
+          participant => participant.toString() !== user.id.toString()
+        )
         // recipients: conversation.participantsIds
       });
       const saveMessage = await newMess.save();
-      let messageToReturn = await Message.findById(saveMessage.id).populate(
-        "sender"
-      );
+
+      let messageToReturn = await Message.findById(saveMessage.id)
+        .populate("sender")
+        .populate("waitingToReadRecipients");
+
+      // Add current readByCurrentUser=true since user creating message automatically read his message
+      messageToReturn.readByCurrentUser = true;
+
       context.pubsub.publish("NEW_MESSAGE", {
         newMessage: messageToReturn
       });
