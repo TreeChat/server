@@ -2,6 +2,7 @@ const { AuthenticationError, UserInputError } = require("apollo-server");
 
 const User = require("../../models/User");
 const Conversation = require("../../models/Conversation");
+const Message = require("../../models/Message");
 const checkAuth = require("../../utils/auth/checkAuth");
 
 module.exports = {
@@ -138,7 +139,41 @@ module.exports = {
         context.pubsub.publish("NEW_CONVERSATION", {
           newConversation: convSaved
         });
+
         return convSaved;
+      }
+    },
+    async readConversation(_, { conversationId }, context) {
+      // Check User
+      const user = checkAuth(context);
+
+      // Update all messsages with conv id and delete the user id in waitingToReadRecipients array
+      try {
+        let messages = await Message.updateMany(
+          { conversation: conversationId },
+          {
+            $pull: { waitingToReadRecipients: user.id }
+          },
+          { multi: true }
+        );
+        let conv = await Conversation.findById(conversationId)
+          .populate({
+            path: "messages",
+            populate: {
+              path: "sender"
+            }
+          })
+          .sort({ createdAt: -1 });
+        // Add readByCurrentUser for each message
+        conv.messages.forEach(message => {
+          message.readByCurrentUser = !message.waitingToReadRecipients.includes(
+            user.id.toString()
+          );
+        });
+        // Return
+        return conv;
+      } catch (error) {
+        throw new Error(error);
       }
     }
   },

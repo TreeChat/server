@@ -67,10 +67,11 @@ module.exports = gql`
     updateCurrentUser(name: String, avatar: String): User!
     # create conversation
     createConversation(recipients: [String]!): Conversation!
+    # read conversation and all messages related
+    readConversation(conversationId: String!): Conversation!
 
     # create message
     createMessage(createMessageInput: MessageInput): Message!
-
     # delete message
     deleteMessage(conversationId: String!, messageId: String!): Boolean!
   }
