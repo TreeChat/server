@@ -19,7 +19,7 @@ const messageSchema = new Schema({
   },
   conversation: {
     type: Schema.Types.ObjectId,
-    ref: "conversations"
+    ref: "Conversation"
   },
   recipients: [
     {

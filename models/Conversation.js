@@ -12,7 +12,7 @@ const conversationSchema = new Schema({
   participantsIds: [
     {
       type: Schema.Types.ObjectId,
-      ref: "users"
+      ref: "User"
     }
   ],
   messages: [

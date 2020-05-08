@@ -78,10 +78,10 @@ module.exports = {
       let messageToReturn = await Message.findById(saveMessage.id)
         .populate("sender")
         .populate("waitingToReadRecipients");
+      // .populate("conversation");
 
       // Add current readByCurrentUser=true since user creating message automatically read his message
       messageToReturn.readByCurrentUser = true;
-
       context.pubsub.publish("NEW_MESSAGE", {
         newMessage: messageToReturn
       });

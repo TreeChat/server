@@ -10,7 +10,7 @@ const userSchema = new Schema({
   contacts: [
     {
       type: Schema.Types.ObjectId,
-      ref: "users"
+      ref: "User"
     }
   ],
   conversations: [
@@ -22,7 +22,7 @@ const userSchema = new Schema({
   messages: [
     {
       type: Schema.Types.ObjectId,
-      ref: "messages"
+      ref: "Message"
     }
   ]
 });
